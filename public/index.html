@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -102,51 +103,72 @@
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <div class="page-title">📚 Manga Series</div>
-    <div id="seriesContainer" class="series-grid"></div>
-</div>
+    <div class="container">
+        <div class="page-title">📚 Manga Series</div>
+        <div id="seriesContainer" class="series-grid"></div>
+    </div>
 
-<script>
-    // Danh sách series (folder names)
-    const series = [
-        "the-fable", "the-fable-the-second-contact", "the-fable-bi-mat-thu-ba"
-    ];
+    <script>
+        // Danh sách series (folder names)
+        const series = [
+            "the-fable", "the-fable-the-second-contact", "the-fable-bi-mat-thu-ba"
+        ];
 
-    // Load series list
-    function loadSeries() {
-        const container = document.getElementById("seriesContainer");
-        
-        if (series.length === 0) {
-            container.innerHTML = '<div class="no-series">Không có series nào</div>';
-            return;
+        // Load series list
+        function loadSeries() {
+            const container = document.getElementById("seriesContainer");
+
+            if (series.length === 0) {
+                container.innerHTML = '<div class="no-series">Không có series nào</div>';
+                return;
+            }
+
+            series.forEach(seriesName => {
+                const card = document.createElement("a");
+                card.className = "series-card";
+                card.href = seriesName + "/index.html";
+                card.title = "Mở " + seriesName;
+                card.addEventListener("click", () => {
+                    let data = {};
+
+                    // load
+                    const raw = localStorage.getItem("data");
+                    if (raw) {
+                        data = JSON.parse(raw);
+                    }
+
+                    // nếu chưa có series thì tạo mới
+                    if (!data[seriesName]) {
+                        data[seriesName] = {
+                            chapter: 0
+                        };
+                    }
+
+                    // luôn save lại
+                    localStorage.setItem("data", JSON.stringify(data));
+                });
+
+                const icon = document.createElement("div");
+                icon.className = "series-icon";
+                icon.textContent = "📖";
+
+                const name = document.createElement("div");
+                name.className = "series-name";
+                name.textContent = seriesName.replace(/-/g, " ");
+
+                card.appendChild(icon);
+                card.appendChild(name);
+                container.appendChild(card);
+            });
         }
 
-        series.forEach(seriesName => {
-            const card = document.createElement("a");
-            card.className = "series-card";
-            card.href = seriesName + "/index.html";
-            card.title = "Mở " + seriesName;
-
-            const icon = document.createElement("div");
-            icon.className = "series-icon";
-            icon.textContent = "📖";
-
-            const name = document.createElement("div");
-            name.className = "series-name";
-            name.textContent = seriesName.replace(/-/g, " ");
-
-            card.appendChild(icon);
-            card.appendChild(name);
-            container.appendChild(card);
-        });
-    }
-
-    // Initialize
-    loadSeries();
-</script>
+        // Initialize
+        loadSeries();
+    </script>
 
 </body>
+
 </html>
