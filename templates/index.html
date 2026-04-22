@@ -122,38 +122,21 @@
     <script src="data.js"></script>
 
     <script>
-        // Initialize
+        // ===== Variable Declarations =====
         let currentChapterIndex = 0;
-        // Danh sách chapters từ data.js
-        const seriesData = getSeriesPath();
-        const seriesPath = seriesData.path;
         const chapters = Object.keys(DATA);
-
-        //load data từ localstorage để nhớ chapter cuối cùng đã xem
+        const select = document.getElementById("chapterSelect");
+        
+        // Load localStorage data
         const raw = localStorage.getItem("data");
         const data = raw ? JSON.parse(raw) : {};
-        //load localstorage để nhớ chapter cuối cùng đã xem
-        const savedChapterIndex = data[seriesData.name]?.chapter;
-        // //ghi log để debug
-        // console.log("Saved data from localStorage:", data[seriesPath], seriesPath, "savedChapterIndex:", savedChapterIndex);
+        
+        // Get series information
+        const seriesData = getSeriesPath();
+        const seriesPath = seriesData.path;
 
-        if (savedChapterIndex !== null) {
-            currentChapterIndex = parseInt(savedChapterIndex);
-        } else {
-            currentChapterIndex = getCurrentChapterIndex();
-        }
-
-        const select = document.getElementById("chapterSelect");
-        const options = chapters.map((chapter, index) => {
-            const selected = index === currentChapterIndex ? "selected" : "";
-            return `<option value="${index}" ${selected}>${chapter}</option>`;
-        }).join("");
-        select.innerHTML = options;
-        //ghi log để debug
-        console.log("Current Chapter Index:", currentChapterIndex, "seriesPath:", seriesPath);
-        loadImages();
-        updateNavigation();
-
+        // ===== Function Definitions =====
+        
         // Get current chapter from URL path
         function getCurrentChapterIndex() {
             const url = window.location.pathname;
@@ -167,19 +150,10 @@
             return 0;
         }
 
-        // Get series path from URL
+        // Get series path and name from URL
         function getSeriesPath() {
             const url = window.location.pathname;
-            //ghi log để debug
-            console.log("Current URL:", url);
             const parts = url.split('/');
-            //với url có format: .../the-fable-bi-mat-thu-ba/index.html
-            //thì sẽ trả về: the-fable-bi-mat-thu-ba
-            //ghi log để debug
-            console.log("URL parts:", parts);
-            console.log("Before last part:", parts[parts.length - 2], parts[parts.length - 2] + '/');
-            // return parts[parts.length - 2];
-            // Find the part before Chap_XXX
             for (let i = parts.length - 1; i >= 0; i--) {
                 if (parts[i].startsWith('index.html')) {
                     return {
@@ -188,7 +162,7 @@
                     };
                 }
             }
-            return '';
+            return { path: '', name: '' };
         }
 
         // Load images for current chapter
@@ -198,8 +172,7 @@
 
             const currentChapter = chapters[currentChapterIndex];
             const chapterPath = `${seriesPath}${currentChapter}/`;
-            // const chapterPath = `/${seriesPath}/${currentChapter}/`;
-            const images = DATA[currentChapter] || []; // Get images from DATA
+            const images = DATA[currentChapter] || [];
 
             // Update title
             document.getElementById("chapterTitle").textContent = currentChapter;
@@ -227,34 +200,46 @@
             prevBtn.disabled = currentChapterIndex === 0;
             nextBtn.disabled = currentChapterIndex === chapters.length - 1;
 
-            if (currentChapterIndex > 0) {
-                prevBtn.textContent = `← ${chapters[currentChapterIndex - 1]}`;
-            } else {
-                prevBtn.textContent = "← Previous";
-            }
+            prevBtn.textContent = currentChapterIndex > 0 
+                ? `← ${chapters[currentChapterIndex - 1]}` 
+                : "← Previous";
 
-            if (currentChapterIndex < chapters.length - 1) {
-                nextBtn.textContent = `${chapters[currentChapterIndex + 1]} →`;
-            } else {
-                nextBtn.textContent = "Next →";
-            }
+            nextBtn.textContent = currentChapterIndex < chapters.length - 1 
+                ? `${chapters[currentChapterIndex + 1]} →` 
+                : "Next →";
         }
 
+        // Save current chapter to localStorage
         function saveCurrentChapterToLocalStorage() {
-            data[seriesData.name] = {
-                chapter: currentChapterIndex
-            };
+            data[seriesData.name] = { chapter: currentChapterIndex };
             localStorage.setItem("data", JSON.stringify(data));
         }
 
-        // Event listeners
+        // ===== Initialization =====
+        
+        // Load saved chapter or get from URL
+        const savedChapterIndex = data[seriesData.name]?.chapter;
+        currentChapterIndex = savedChapterIndex !== null && savedChapterIndex !== undefined
+            ? parseInt(savedChapterIndex)
+            : getCurrentChapterIndex();
+
+        // Populate chapter select
+        const options = chapters.map((chapter, index) => {
+            const selected = index === currentChapterIndex ? "selected" : "";
+            return `<option value="${index}" ${selected}>${chapter}</option>`;
+        }).join("");
+        select.innerHTML = options;
+
+        // Load initial content
+        loadImages();
+        updateNavigation();
+
+        // ===== Event Listeners =====
+        
         document.getElementById("prevBtn").addEventListener("click", () => {
             if (currentChapterIndex > 0) {
                 currentChapterIndex--;
-                //update localstorage khi chuyển chapter
                 saveCurrentChapterToLocalStorage();
-
-                //update select để đồng bộ với chapter hiện tại
                 select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
@@ -265,9 +250,7 @@
         document.getElementById("nextBtn").addEventListener("click", () => {
             if (currentChapterIndex < chapters.length - 1) {
                 currentChapterIndex++;
-                //update localstorage khi chuyển chapter
                 saveCurrentChapterToLocalStorage();
-                //update select để đồng bộ với chapter hiện tại
                 select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
@@ -277,7 +260,6 @@
 
         select.addEventListener("change", () => {
             currentChapterIndex = Number(select.value);
-            //update localstorage khi chuyển chapter
             saveCurrentChapterToLocalStorage();
             loadImages();
             updateNavigation();
