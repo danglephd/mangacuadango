@@ -119,28 +119,18 @@
         <div id="images"></div>
     </div>
 
-    <script>
-        // Danh sách chapters (cố định)
-        const chapters = [
-            "Chap_001", "Chap_002", "Chap_003", "Chap_004", "Chap_005",
-            "Chap_006", "Chap_007", "Chap_008", "Chap_009", "Chap_010",
-            "Chap_011", "Chap_012", "Chap_013", "Chap_014", "Chap_015",
-            "Chap_016", "Chap_017", "Chap_018", "Chap_019", "Chap_020",
-        ];
+    <script src="data.js"></script>
 
-        // Danh sách images (cố định - 50 ảnh)
-        const images = [
-            "001.jpg", "002.jpg", "003.jpg", "004.jpg", "005.jpg",
-            "006.jpg", "007.jpg", "008.jpg", "009.jpg", "010.jpg",
-            "011.jpg", "012.jpg", "013.jpg", "014.jpg", "015.jpg",
-            "016.jpg", "017.jpg", "018.jpg", "019.jpg", "020.jpg",
-            "021.jpg", "022.jpg", "023.jpg", "024.jpg", "025.jpg",
-            "026.jpg", "027.jpg", "028.jpg", "029.jpg", "030.jpg",
-            "031.jpg", "032.jpg", "033.jpg", "034.jpg", "035.jpg",
-            "036.jpg", "037.jpg", "038.jpg", "039.jpg", "040.jpg",
-            "041.jpg", "042.jpg", "043.jpg", "044.jpg", "045.jpg",
-            "046.jpg", "047.jpg", "048.jpg", "049.jpg", "050.jpg",
-        ];
+    <script>
+        // Danh sách chapters từ data.js
+        const chapters = Object.keys(DATA);
+
+        //load localstorage để nhớ series và chapter cuối cùng đã xem
+        const savedSeries = localStorage.getItem("savedSeries");
+        const savedChapterIndex = localStorage.getItem("savedChapterIndex");
+        if (savedChapterIndex !== null) {
+            currentChapterIndex = parseInt(savedChapterIndex);
+        }
 
         let currentChapterIndex = 0;
         const select = document.getElementById("chapterSelect");
@@ -184,6 +174,7 @@
             const seriesPath = getSeriesPath();
             const currentChapter = chapters[currentChapterIndex];
             const chapterPath = `${seriesPath}${currentChapter}/`;
+            const images = DATA[currentChapter] || []; // Get images from DATA
 
             // Update title
             document.getElementById("chapterTitle").textContent = currentChapter;
@@ -233,6 +224,11 @@
         document.getElementById("prevBtn").addEventListener("click", () => {
             if (currentChapterIndex > 0) {
                 currentChapterIndex--;
+                //update localstorage khi chuyển chapter
+                localStorage.setItem("savedChapterIndex", currentChapterIndex);
+                localStorage.setItem("savedSeries", window.location.pathname.split('/')[1]);
+                //update select để đồng bộ với chapter hiện tại
+                select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
                 window.scrollTo(0, 0);
@@ -242,6 +238,11 @@
         document.getElementById("nextBtn").addEventListener("click", () => {
             if (currentChapterIndex < chapters.length - 1) {
                 currentChapterIndex++;
+                //update localstorage khi chuyển chapter
+                localStorage.setItem("savedChapterIndex", currentChapterIndex);
+                localStorage.setItem("savedSeries", window.location.pathname.split('/')[1]);
+                //update select để đồng bộ với chapter hiện tại
+                select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
                 window.scrollTo(0, 0);
@@ -250,6 +251,9 @@
 
         select.addEventListener("change", () => {
             currentChapterIndex = Number(select.value);
+            //update localstorage khi chuyển chapter
+            localStorage.setItem("savedChapterIndex", currentChapterIndex);
+            localStorage.setItem("savedSeries", window.location.pathname.split('/')[1]);
             loadImages();
             updateNavigation();
             window.scrollTo(0, 0);
