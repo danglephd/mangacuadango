@@ -122,62 +122,86 @@
     <script src="data.js"></script>
 
     <script>
-        // ===== Variable Declarations =====
+        // ===== INIT =====
         let currentChapterIndex = 0;
-        const chapters = Object.keys(DATA);
-        const select = document.getElementById("chapterSelect");
-        
-        // Load localStorage data
-        const raw = localStorage.getItem("data");
-        const data = raw ? JSON.parse(raw) : {};
-        
-        // Get series information
-        const seriesData = getSeriesPath();
+
+        const seriesData = getSeriesInfo();
         const seriesPath = seriesData.path;
+        const seriesName = seriesData.name;
 
-        // ===== Function Definitions =====
-        
-        // Get current chapter from URL path
+        const chapters = Object.keys(DATA);
+
+        // ===== LOAD LOCAL STORAGE =====
+        let data = {};
+        try {
+            data = JSON.parse(localStorage.getItem("data")) || {};
+        } catch {
+            data = {};
+        }
+
+        const savedChapterIndex = data?.[seriesName]?.chapter;
+
+        if (typeof savedChapterIndex === "number") {
+            currentChapterIndex = savedChapterIndex;
+        } else {
+            currentChapterIndex = getCurrentChapterIndex();
+        }
+
+        // ===== INIT SELECT =====
+        const select = document.getElementById("chapterSelect");
+        select.innerHTML = chapters.map((chapter, index) => `
+        <option value="${index}" ${index === currentChapterIndex ? "selected" : ""}>
+            ${chapter}
+        </option>
+    `).join("");
+
+        loadImages();
+        updateNavigation();
+
+        // ===== GET CURRENT CHAPTER FROM URL =====
         function getCurrentChapterIndex() {
-            const url = window.location.pathname;
-            const match = url.match(/Chap_(\d+)/);
-            if (match) {
-                const chapterNum = parseInt(match[1]);
-                const chapterName = `Chap_${String(chapterNum).padStart(3, '0')}`;
-                const index = chapters.indexOf(chapterName);
-                return index >= 0 ? index : 0;
-            }
-            return 0;
+            const match = window.location.pathname.match(/Chap_(\d+)/);
+            if (!match) return 0;
+
+            const chapterName = `Chap_${String(match[1]).padStart(3, '0')}`;
+            const index = chapters.indexOf(chapterName);
+            return index >= 0 ? index : 0;
         }
 
-        // Get series path and name from URL
-        function getSeriesPath() {
-            const url = window.location.pathname;
-            const parts = url.split('/');
-            for (let i = parts.length - 1; i >= 0; i--) {
-                if (parts[i].startsWith('index.html')) {
-                    return {
-                        path: parts.slice(0, i).join('/') + '/',
-                        name: parts[parts.length - 2]
-                    };
-                }
+        // ===== GET SERIES INFO =====
+        function getSeriesInfo() {
+            const parts = window.location.pathname.split('/').filter(Boolean);
+
+            // Ví dụ:
+            // /the-fable/Chap_001/index.html
+            // /the-fable/index.html
+
+            const chapIndex = parts.findIndex(p => p.startsWith("Chap_"));
+
+            let name;
+            if (chapIndex !== -1) {
+                name = parts[chapIndex - 1];
+            } else {
+                name = parts[parts.length - 2];
             }
-            return { path: '', name: '' };
+
+            const path = "/" + parts.slice(0, parts.indexOf(name) + 1).join("/") + "/";
+
+            return { name, path };
         }
 
-        // Load images for current chapter
+        // ===== LOAD IMAGES =====
         function loadImages() {
             const container = document.getElementById("images");
             container.innerHTML = '';
 
             const currentChapter = chapters[currentChapterIndex];
             const chapterPath = `${seriesPath}${currentChapter}/`;
+
             const images = DATA[currentChapter] || [];
 
-            // Update title
             document.getElementById("chapterTitle").textContent = currentChapter;
 
-            // Load images
             images.forEach(filename => {
                 const div = document.createElement("div");
                 div.className = "image-wrapper";
@@ -192,7 +216,7 @@
             });
         }
 
-        // Update navigation buttons
+        // ===== NAVIGATION =====
         function updateNavigation() {
             const prevBtn = document.getElementById("prevBtn");
             const nextBtn = document.getElementById("nextBtn");
@@ -200,46 +224,29 @@
             prevBtn.disabled = currentChapterIndex === 0;
             nextBtn.disabled = currentChapterIndex === chapters.length - 1;
 
-            prevBtn.textContent = currentChapterIndex > 0 
-                ? `← ${chapters[currentChapterIndex - 1]}` 
+            prevBtn.textContent = currentChapterIndex > 0
+                ? `← ${chapters[currentChapterIndex - 1]}`
                 : "← Previous";
 
-            nextBtn.textContent = currentChapterIndex < chapters.length - 1 
-                ? `${chapters[currentChapterIndex + 1]} →` 
+            nextBtn.textContent = currentChapterIndex < chapters.length - 1
+                ? `${chapters[currentChapterIndex + 1]} →`
                 : "Next →";
         }
 
-        // Save current chapter to localStorage
-        function saveCurrentChapterToLocalStorage() {
-            data[seriesData.name] = { chapter: currentChapterIndex };
+        // ===== SAVE =====
+        function saveCurrentChapter() {
+            data[seriesName] = {
+                chapter: currentChapterIndex
+            };
             localStorage.setItem("data", JSON.stringify(data));
         }
 
-        // ===== Initialization =====
-        
-        // Load saved chapter or get from URL
-        const savedChapterIndex = data[seriesData.name]?.chapter;
-        currentChapterIndex = savedChapterIndex !== null && savedChapterIndex !== undefined
-            ? parseInt(savedChapterIndex)
-            : getCurrentChapterIndex();
-
-        // Populate chapter select
-        const options = chapters.map((chapter, index) => {
-            const selected = index === currentChapterIndex ? "selected" : "";
-            return `<option value="${index}" ${selected}>${chapter}</option>`;
-        }).join("");
-        select.innerHTML = options;
-
-        // Load initial content
-        loadImages();
-        updateNavigation();
-
-        // ===== Event Listeners =====
-        
+        // ===== EVENTS =====
         document.getElementById("prevBtn").addEventListener("click", () => {
             if (currentChapterIndex > 0) {
                 currentChapterIndex--;
-                saveCurrentChapterToLocalStorage();
+                saveCurrentChapter();
+
                 select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
@@ -250,7 +257,8 @@
         document.getElementById("nextBtn").addEventListener("click", () => {
             if (currentChapterIndex < chapters.length - 1) {
                 currentChapterIndex++;
-                saveCurrentChapterToLocalStorage();
+                saveCurrentChapter();
+
                 select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
@@ -260,7 +268,8 @@
 
         select.addEventListener("change", () => {
             currentChapterIndex = Number(select.value);
-            saveCurrentChapterToLocalStorage();
+            saveCurrentChapter();
+
             loadImages();
             updateNavigation();
             window.scrollTo(0, 0);
