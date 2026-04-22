@@ -120,11 +120,17 @@
     </div>
 
     <script src="data.js"></script>
-    
+
     <script>
         // Danh sách chapters từ data.js
         const chapters = Object.keys(DATA);
 
+        //load localstorage để nhớ series và chapter cuối cùng đã xem
+        const savedSeries = localStorage.getItem("savedSeries");
+        const savedChapterIndex = localStorage.getItem("savedChapterIndex");
+        if (savedChapterIndex !== null) {
+            currentChapterIndex = parseInt(savedChapterIndex);
+        }
 
         let currentChapterIndex = 0;
         const select = document.getElementById("chapterSelect");
@@ -218,6 +224,11 @@
         document.getElementById("prevBtn").addEventListener("click", () => {
             if (currentChapterIndex > 0) {
                 currentChapterIndex--;
+                //update localstorage khi chuyển chapter
+                localStorage.setItem("savedChapterIndex", currentChapterIndex);
+                localStorage.setItem("savedSeries", window.location.pathname.split('/')[1]);
+                //update select để đồng bộ với chapter hiện tại
+                select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
                 window.scrollTo(0, 0);
@@ -227,6 +238,11 @@
         document.getElementById("nextBtn").addEventListener("click", () => {
             if (currentChapterIndex < chapters.length - 1) {
                 currentChapterIndex++;
+                //update localstorage khi chuyển chapter
+                localStorage.setItem("savedChapterIndex", currentChapterIndex);
+                localStorage.setItem("savedSeries", window.location.pathname.split('/')[1]);
+                //update select để đồng bộ với chapter hiện tại
+                select.value = currentChapterIndex;
                 loadImages();
                 updateNavigation();
                 window.scrollTo(0, 0);
@@ -235,6 +251,9 @@
 
         select.addEventListener("change", () => {
             currentChapterIndex = Number(select.value);
+            //update localstorage khi chuyển chapter
+            localStorage.setItem("savedChapterIndex", currentChapterIndex);
+            localStorage.setItem("savedSeries", window.location.pathname.split('/')[1]);
             loadImages();
             updateNavigation();
             window.scrollTo(0, 0);
