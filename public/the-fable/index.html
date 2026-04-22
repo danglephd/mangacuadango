@@ -119,74 +119,12 @@
         <div id="images"></div>
     </div>
 
+    <script src="data.js"></script>
+    
     <script>
-        // Danh sách chapters (cố định)
-        const chapters = [
-            "Chap_001", "Chap_002", "Chap_003", "Chap_004", "Chap_005",
-            "Chap_006", "Chap_007", "Chap_008", "Chap_009", "Chap_010",
-            "Chap_011", "Chap_012", "Chap_013", "Chap_014", "Chap_015",
-            "Chap_016", "Chap_017", "Chap_018", "Chap_019", "Chap_020",
-            "Chap_021", "Chap_022", "Chap_023", "Chap_024", "Chap_025",
-            "Chap_026", "Chap_027", "Chap_028", "Chap_029", "Chap_030",
-            "Chap_031", "Chap_032", "Chap_033", "Chap_034", "Chap_035",
-            "Chap_036", "Chap_037", "Chap_038", "Chap_039", "Chap_040",
-            "Chap_041", "Chap_042", "Chap_043", "Chap_044", "Chap_045",
-            "Chap_046", "Chap_047", "Chap_048", "Chap_049", "Chap_050",
-            "Chap_051", "Chap_052", "Chap_053", "Chap_054", "Chap_055",
-            "Chap_056", "Chap_057", "Chap_058", "Chap_059", "Chap_060",
-            "Chap_061", "Chap_062", "Chap_063", "Chap_064", "Chap_065",
-            "Chap_066", "Chap_067", "Chap_068", "Chap_069", "Chap_070",
-            "Chap_071", "Chap_072", "Chap_073", "Chap_074", "Chap_075",
-            "Chap_076", "Chap_077", "Chap_078", "Chap_079", "Chap_080",
-            "Chap_081", "Chap_082", "Chap_083", "Chap_084", "Chap_085",
-            "Chap_086", "Chap_087", "Chap_088", "Chap_089", "Chap_090",
-            "Chap_091", "Chap_092", "Chap_093", "Chap_094", "Chap_095",
-            "Chap_096", "Chap_097", "Chap_098", "Chap_099", "Chap_100",
-            "Chap_101", "Chap_102", "Chap_103", "Chap_104", "Chap_105",
-            "Chap_106", "Chap_107", "Chap_108", "Chap_109", "Chap_110",
-            "Chap_111", "Chap_112", "Chap_113", "Chap_114", "Chap_115",
-            "Chap_116", "Chap_117", "Chap_118", "Chap_119", "Chap_120",
-            "Chap_121", "Chap_122", "Chap_123", "Chap_124", "Chap_125",
-            "Chap_126", "Chap_127", "Chap_128", "Chap_129", "Chap_130",
-            "Chap_131", "Chap_132", "Chap_133", "Chap_134", "Chap_135",
-            "Chap_136", "Chap_137", "Chap_138", "Chap_139", "Chap_140",
-            "Chap_141", "Chap_142", "Chap_143", "Chap_144", "Chap_145",
-            "Chap_146", "Chap_147", "Chap_148", "Chap_149", "Chap_150",
-            "Chap_151", "Chap_152", "Chap_153", "Chap_154", "Chap_155",
-            "Chap_156", "Chap_157", "Chap_158", "Chap_159", "Chap_160",
-            "Chap_161", "Chap_162", "Chap_163", "Chap_164", "Chap_165",
-            "Chap_166", "Chap_167", "Chap_168", "Chap_169", "Chap_170",
-            "Chap_171", "Chap_172", "Chap_173", "Chap_174", "Chap_175",
-            "Chap_176", "Chap_177", "Chap_178", "Chap_179", "Chap_180",
-            "Chap_181", "Chap_182", "Chap_183", "Chap_184", "Chap_185",
-            "Chap_186", "Chap_187", "Chap_188", "Chap_189", "Chap_190",
-            "Chap_191", "Chap_192", "Chap_193", "Chap_194", "Chap_195",
-            "Chap_196", "Chap_197", "Chap_198", "Chap_199", "Chap_200",
-            "Chap_201", "Chap_202", "Chap_203", "Chap_204", "Chap_205",
-            "Chap_206", "Chap_207", "Chap_208", "Chap_209", "Chap_210",
-            "Chap_211", "Chap_212", "Chap_213", "Chap_214", "Chap_215",
-            "Chap_216", "Chap_217", "Chap_218", "Chap_219", "Chap_220",
-            "Chap_221", "Chap_222", "Chap_223", "Chap_224", "Chap_225",
-            "Chap_226", "Chap_227", "Chap_228", "Chap_229", "Chap_230",
-            "Chap_231", "Chap_232", "Chap_233", "Chap_234", "Chap_235",
-            "Chap_236", "Chap_237", "Chap_238", "Chap_239", "Chap_240",
-        ];
+        // Danh sách chapters từ data.js
+        const chapters = Object.keys(DATA);
 
-        // Danh sách images (cố định - 50 ảnh)
-        const images = [
-            "001.jpg", "002.jpg", "003.jpg", "004.jpg", "005.jpg",
-            "006.jpg", "007.jpg", "008.jpg", "009.jpg", "010.jpg",
-            "011.jpg", "012.jpg", "013.jpg", "014.jpg", "015.jpg",
-            "016.jpg", "017.jpg", "018.jpg", "019.jpg", "020.jpg",
-            "021.jpg", "022.jpg", "023.jpg", "024.jpg", "025.jpg",
-            "026.jpg", "027.jpg", "028.jpg", "029.jpg", "030.jpg",
-            "031.jpg", "032.jpg", "033.jpg", "034.jpg", "035.jpg",
-            "036.jpg", "037.jpg", "038.jpg", "039.jpg", "040.jpg",
-            "041.jpg", "042.jpg", "043.jpg", "044.jpg", "045.jpg",
-            "046.jpg", "047.jpg", "048.jpg", "049.jpg", "050.jpg",
-            "051.jpg", "052.jpg", "053.jpg", "054.jpg", "055.jpg",
-            "056.jpg", "057.jpg", "058.jpg", "059.jpg", "060.jpg",
-        ];
 
         let currentChapterIndex = 0;
         const select = document.getElementById("chapterSelect");
@@ -230,6 +168,7 @@
             const seriesPath = getSeriesPath();
             const currentChapter = chapters[currentChapterIndex];
             const chapterPath = `${seriesPath}${currentChapter}/`;
+            const images = DATA[currentChapter] || []; // Get images from DATA
 
             // Update title
             document.getElementById("chapterTitle").textContent = currentChapter;
@@ -243,11 +182,6 @@
                 img.src = chapterPath + filename;
                 img.loading = "lazy";
                 img.alt = filename;
-
-                // Nếu load lỗi (file không tồn tại) → bỏ luôn div
-                img.onerror = function () {
-                    div.remove();
-                };
 
                 div.appendChild(img);
                 container.appendChild(div);
