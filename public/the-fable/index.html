@@ -109,6 +109,7 @@
     <nav class="chapter-nav">
         <div class="nav-container">
             <button id="prevBtn" class="nav-btn">← Previous</button>
+            <select id="chapterSelect"></select>
             <button id="nextBtn" class="nav-btn">Next →</button>
         </div>
     </nav>
@@ -188,6 +189,12 @@
         ];
 
         let currentChapterIndex = 0;
+        const select = document.getElementById("chapterSelect");
+        const options = chapters.map((chapter, index) => {
+            const selected = index === currentChapterIndex ? "selected" : "";
+            return `<option value="${index}" ${selected}>${chapter}</option>`;
+        }).join("");
+        select.innerHTML = options;
 
         // Get current chapter from URL path
         function getCurrentChapterIndex() {
@@ -290,6 +297,13 @@
                 updateNavigation();
                 window.scrollTo(0, 0);
             }
+        });
+
+        select.addEventListener("change", () => {
+            currentChapterIndex = Number(select.value);
+            loadImages();
+            updateNavigation();
+            window.scrollTo(0, 0);
         });
     </script>
 
