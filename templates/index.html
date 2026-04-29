@@ -91,16 +91,143 @@
             background: #222;
         }
 
-        /* Mobile tối ưu */
+        /* === MOBILE SWIPE FEATURE START === */
         @media (max-width: 768px) {
             .container {
                 padding: 5px;
+                position: relative;
+                overflow: hidden;
             }
 
             .chapter-title {
                 font-size: 16px;
             }
+
+            /* Slider Container */
+            #images {
+                position: relative;
+                width: 100%;
+                height: 100vh;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Slider Wrapper */
+            .slider-wrapper {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            /* Individual Page/Slide */
+            .slide {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+
+            .slide.active {
+                opacity: 1;
+                z-index: 10;
+            }
+
+            .slide.prev {
+                transform: translateX(-100%);
+            }
+
+            .slide.next {
+                transform: translateX(100%);
+            }
+
+            .slide img {
+                max-width: 100%;
+                max-height: 100%;
+                width: auto;
+                height: auto;
+                object-fit: contain;
+                border-radius: 0;
+                background: #000;
+            }
+
+            /* Page Indicator */
+            .page-indicator {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: #fff;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 14px;
+                z-index: 50;
+                font-weight: bold;
+            }
+
+            /* Tap zones for navigation */
+            .tap-zone {
+                position: fixed;
+                top: 0;
+                width: 20%;
+                height: 100%;
+                z-index: 5;
+                cursor: pointer;
+            }
+
+            .tap-zone.left {
+                left: 0;
+            }
+
+            .tap-zone.right {
+                right: 0;
+            }
+
+            .tap-zone:active::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: rgba(255, 255, 255, 0.1);
+            }
         }
+
+        /* Desktop behavior unchanged */
+        @media (min-width: 769px) {
+            .page-indicator,
+            .tap-zone {
+                display: none;
+            }
+
+            #images {
+                display: block !important;
+            }
+
+            .slider-wrapper {
+                display: contents;
+            }
+
+            .slide {
+                position: static !important;
+                opacity: 1 !important;
+                transform: none !important;
+                height: auto !important;
+                display: block !important;
+            }
+
+            .image-wrapper {
+                display: block !important;
+            }
+        }
+        /* === MOBILE SWIPE FEATURE END === */
     </style>
 </head>
 
@@ -119,11 +246,25 @@
         <div id="images"></div>
     </div>
 
+    <!-- === MOBILE SWIPE FEATURE START === -->
+    <div id="pageIndicator" class="page-indicator"></div>
+    <div id="leftTapZone" class="tap-zone left"></div>
+    <div id="rightTapZone" class="tap-zone right"></div>
+    <!-- === MOBILE SWIPE FEATURE END === -->
+
     <script src="data.js"></script>
 
     <script>
         // ===== INIT =====
         let currentChapterIndex = 0;
+        // === MOBILE SWIPE FEATURE START ===
+        let currentPageIndex = 0;
+        let isMobileMode = window.innerWidth <= 768;
+        let allImages = [];
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const SWIPE_THRESHOLD = 50;
+        // === MOBILE SWIPE FEATURE END ===
 
         const seriesData = getSeriesInfo();
         const seriesPath = seriesData.path;
@@ -157,6 +298,9 @@
 
         loadImages();
         updateNavigation();
+        // === MOBILE SWIPE FEATURE START ===
+        setupMobileMode();
+        // === MOBILE SWIPE FEATURE END ===
 
         // ===== GET CURRENT CHAPTER FROM URL =====
         function getCurrentChapterIndex() {
@@ -199,22 +343,126 @@
             const chapterPath = `${seriesPath}${currentChapter}/`;
 
             const images = DATA[currentChapter] || [];
+            
+            // === MOBILE SWIPE FEATURE START ===
+            allImages = images;
+            currentPageIndex = 0;
+            // === MOBILE SWIPE FEATURE END ===
 
             document.getElementById("chapterTitle").textContent = currentChapter;
 
-            images.forEach(filename => {
-                const div = document.createElement("div");
-                div.className = "image-wrapper";
+            // === MOBILE SWIPE FEATURE START ===
+            if (isMobileMode) {
+                // Mobile: create slider structure
+                const sliderWrapper = document.createElement("div");
+                sliderWrapper.className = "slider-wrapper";
 
-                const img = document.createElement("img");
-                img.src = chapterPath + filename;
-                img.loading = "lazy";
-                img.alt = filename;
+                images.forEach((filename, index) => {
+                    const slide = document.createElement("div");
+                    slide.className = "slide";
+                    if (index === 0) slide.classList.add("active");
 
-                div.appendChild(img);
-                container.appendChild(div);
-            });
+                    const img = document.createElement("img");
+                    img.src = chapterPath + filename;
+                    img.alt = filename;
+
+                    slide.appendChild(img);
+                    sliderWrapper.appendChild(slide);
+                });
+
+                container.appendChild(sliderWrapper);
+                renderPageIndicator();
+            } else {
+                // Desktop: original vertical scroll layout
+                images.forEach(filename => {
+                    const div = document.createElement("div");
+                    div.className = "image-wrapper";
+
+                    const img = document.createElement("img");
+                    img.src = chapterPath + filename;
+                    img.loading = "lazy";
+                    img.alt = filename;
+
+                    div.appendChild(img);
+                    container.appendChild(div);
+                });
+            }
+            // === MOBILE SWIPE FEATURE END ===
         }
+
+        // === MOBILE SWIPE FEATURE START ===
+        function renderPage(pageIndex) {
+            const slides = document.querySelectorAll(".slide");
+            
+            slides.forEach((slide, index) => {
+                slide.classList.remove("active", "prev", "next");
+                
+                if (index === pageIndex) {
+                    slide.classList.add("active");
+                } else if (index < pageIndex) {
+                    slide.classList.add("prev");
+                } else {
+                    slide.classList.add("next");
+                }
+            });
+
+            renderPageIndicator();
+        }
+
+        function renderPageIndicator() {
+            const pageIndicator = document.getElementById("pageIndicator");
+            const totalPages = allImages.length;
+            pageIndicator.textContent = `${currentPageIndex + 1} / ${totalPages}`;
+        }
+
+        function nextPage() {
+            if (currentPageIndex < allImages.length - 1) {
+                currentPageIndex++;
+                renderPage(currentPageIndex);
+            }
+        }
+
+        function prevPage() {
+            if (currentPageIndex > 0) {
+                currentPageIndex--;
+                renderPage(currentPageIndex);
+            }
+        }
+
+        function setupMobileMode() {
+            if (!isMobileMode) return;
+
+            const imagesContainer = document.getElementById("images");
+
+            // Touch events for swipe
+            imagesContainer.addEventListener("touchstart", (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+
+            imagesContainer.addEventListener("touchend", (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+
+            // Tap zones
+            document.getElementById("leftTapZone").addEventListener("click", prevPage);
+            document.getElementById("rightTapZone").addEventListener("click", nextPage);
+        }
+
+        function handleSwipe() {
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > SWIPE_THRESHOLD) {
+                if (diff > 0) {
+                    // Swipe left → next page
+                    nextPage();
+                } else {
+                    // Swipe right → previous page
+                    prevPage();
+                }
+            }
+        }
+        // === MOBILE SWIPE FEATURE END ===
 
         // ===== NAVIGATION =====
         function updateNavigation() {
@@ -248,6 +496,9 @@
                 saveCurrentChapter();
 
                 select.value = currentChapterIndex;
+                // === MOBILE SWIPE FEATURE START ===
+                currentPageIndex = 0;
+                // === MOBILE SWIPE FEATURE END ===
                 loadImages();
                 updateNavigation();
                 window.scrollTo(0, 0);
@@ -260,6 +511,9 @@
                 saveCurrentChapter();
 
                 select.value = currentChapterIndex;
+                // === MOBILE SWIPE FEATURE START ===
+                currentPageIndex = 0;
+                // === MOBILE SWIPE FEATURE END ===
                 loadImages();
                 updateNavigation();
                 window.scrollTo(0, 0);
@@ -270,10 +524,26 @@
             currentChapterIndex = Number(select.value);
             saveCurrentChapter();
 
+            // === MOBILE SWIPE FEATURE START ===
+            currentPageIndex = 0;
+            // === MOBILE SWIPE FEATURE END ===
             loadImages();
             updateNavigation();
             window.scrollTo(0, 0);
         });
+
+        // === MOBILE SWIPE FEATURE START ===
+        // Handle window resize to detect mobile mode change
+        window.addEventListener("resize", () => {
+            const newIsMobileMode = window.innerWidth <= 768;
+            if (newIsMobileMode !== isMobileMode) {
+                isMobileMode = newIsMobileMode;
+                currentPageIndex = 0;
+                loadImages();
+                setupMobileMode();
+            }
+        });
+        // === MOBILE SWIPE FEATURE END ===
     </script>
 
 </body>
