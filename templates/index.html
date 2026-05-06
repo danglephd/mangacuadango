@@ -23,10 +23,18 @@
         .chapter-nav {
             background: rgba(0, 0, 0, 0.7);
             padding: 15px 0;
-            position: sticky;
             top: 0;
-            z-index: 100;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            left: 0;
+            width: 100%;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .chapter-nav.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
         }
 
         .nav-container {
@@ -202,6 +210,7 @@
 
         /* Desktop behavior unchanged */
         @media (min-width: 769px) {
+
             .page-indicator,
             .tap-zone {
                 display: none;
@@ -227,6 +236,7 @@
                 display: block !important;
             }
         }
+
         /* === MOBILE SWIPE FEATURE END === */
     </style>
 </head>
@@ -280,11 +290,18 @@
         }
 
         const savedChapterIndex = data?.[seriesName]?.chapter;
+        const savedPageIndex = data?.[seriesName]?.page;
 
         if (typeof savedChapterIndex === "number") {
             currentChapterIndex = savedChapterIndex;
         } else {
             currentChapterIndex = getCurrentChapterIndex();
+        }
+        
+        if (typeof savedPageIndex === "number") {
+            currentPageIndex = savedPageIndex;
+        } else {
+            currentPageIndex = 0;
         }
 
         // ===== INIT SELECT =====
@@ -342,10 +359,10 @@
             const chapterPath = `${seriesPath}${currentChapter}/`;
 
             const images = DATA[currentChapter] || [];
-            
+
             // === MOBILE SWIPE FEATURE START ===
             allImages = images;
-            currentPageIndex = 0;
+            currentPageIndex = currentPageIndex >= allImages.length ? 0 : currentPageIndex;
             // === MOBILE SWIPE FEATURE END ===
 
             // === MOBILE SWIPE FEATURE START ===
@@ -357,7 +374,7 @@
                 images.forEach((filename, index) => {
                     const slide = document.createElement("div");
                     slide.className = "slide";
-                    if (index === 0) slide.classList.add("active");
+                    if (index === currentPageIndex) slide.classList.add("active");
 
                     const img = document.createElement("img");
                     img.src = chapterPath + filename;
@@ -390,10 +407,10 @@
         // === MOBILE SWIPE FEATURE START ===
         function renderPage(pageIndex) {
             const slides = document.querySelectorAll(".slide");
-            
+
             slides.forEach((slide, index) => {
                 slide.classList.remove("active", "prev", "next");
-                
+
                 if (index === pageIndex) {
                     slide.classList.add("active");
                 } else if (index < pageIndex) {
@@ -415,6 +432,7 @@
         function nextPage() {
             if (currentPageIndex < allImages.length - 1) {
                 currentPageIndex++;
+                saveCurrentChapter(); // Lưu trang hiện tại khi chuyển trang
                 renderPage(currentPageIndex);
             }
         }
@@ -422,6 +440,7 @@
         function prevPage() {
             if (currentPageIndex > 0) {
                 currentPageIndex--;
+                saveCurrentChapter(); // Lưu trang hiện tại khi chuyển trang
                 renderPage(currentPageIndex);
             }
         }
@@ -481,7 +500,8 @@
         // ===== SAVE =====
         function saveCurrentChapter() {
             data[seriesName] = {
-                chapter: currentChapterIndex
+                chapter: currentChapterIndex,
+                page: currentPageIndex
             };
             localStorage.setItem("data", JSON.stringify(data));
         }
@@ -541,6 +561,34 @@
             }
         });
         // === MOBILE SWIPE FEATURE END ===
+
+        // === CHAPTER NAVIGATION FEATURE START ===
+        const nav = document.querySelector('.chapter-nav');
+
+        let hideTimeout;
+
+        // Hiện nav
+        function showNav() {
+            nav.classList.remove('hidden');
+
+            // reset timer
+            clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(hideNav, 2000); // 2s
+        }
+
+        // Ẩn nav
+        function hideNav() {
+            nav.classList.add('hidden');
+        }
+
+        // Lắng nghe tương tác
+        ['scroll'].forEach(event => {
+            document.addEventListener(event, showNav);
+        });
+
+        // Ẩn ngay từ đầu (tuỳ chọn)
+        hideTimeout = setTimeout(hideNav, 2000);
+        // === CHAPTER NAVIGATION FEATURE END ===
     </script>
 
 </body>
