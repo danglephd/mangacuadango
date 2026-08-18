@@ -68,4 +68,4 @@ node_modules/
 # dataconnect generated files
 .dataconnect
 
-/proj-manga-firebase-adminsdk-fbsvc-0972a6610f.json
+/firebase-parent-service-account.json

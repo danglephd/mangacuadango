@@ -2,8 +2,8 @@
 <html lang="vi">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manga Series</title>
 
     <style>
@@ -15,7 +15,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: auto;
             padding: 20px 10px;
         }
@@ -38,10 +38,10 @@
         .series-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             cursor: pointer;
             text-decoration: none;
             color: #fff;
@@ -49,11 +49,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 150px;
+            min-height: 170px;
+            backdrop-filter: blur(4px);
         }
 
         .series-card:hover {
-            background: rgba(255, 107, 107, 0.2);
+            background: rgba(255, 107, 107, 0.15);
             border-color: #ff6b6b;
             transform: translateY(-5px);
             box-shadow: 0 5px 20px rgba(255, 107, 107, 0.2);
@@ -62,12 +63,19 @@
         .series-name {
             font-size: 18px;
             font-weight: bold;
+            margin-top: 10px;
             word-break: break-word;
         }
 
         .series-icon {
-            font-size: 40px;
-            margin-bottom: 10px;
+            font-size: 42px;
+        }
+
+        .series-url {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #aaa;
+            word-break: break-all;
         }
 
         .no-series {
@@ -77,28 +85,27 @@
             font-size: 16px;
         }
 
-        /* Mobile tối ưu */
         @media (max-width: 768px) {
             .page-title {
                 font-size: 24px;
             }
 
             .series-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
                 gap: 15px;
             }
 
             .series-card {
                 padding: 15px;
-                min-height: 120px;
+                min-height: 140px;
             }
 
             .series-name {
-                font-size: 14px;
+                font-size: 15px;
             }
 
             .series-icon {
-                font-size: 30px;
+                font-size: 32px;
             }
         }
     </style>
@@ -112,60 +119,104 @@
     </div>
 
     <script>
-        // Danh sách series (folder names)
+        // =========================
+        // DANH SÁCH TRUYỆN
+        // =========================
+
         const series = [
-            "the-fable", "the-fable-the-second-contact", "the-fable-bi-mat-thu-ba"
+            {
+                name: "The Fable",
+                url: "https://proj-fable-series.web.app/"
+            },
+            // {
+            //     name: "One Piece",
+            //     url: "https://one-piece.web.app/"
+            // },
+            // {
+            //     name: "Conan",
+            //     url: "https://conan.web.app/"
+            // }
         ];
 
-        // Load series list
+        // =========================
+        // LOAD DANH SÁCH
+        // =========================
+
         function loadSeries() {
             const container = document.getElementById("seriesContainer");
 
             if (series.length === 0) {
-                container.innerHTML = '<div class="no-series">Không có series nào</div>';
+                container.innerHTML = `
+                    <div class="no-series">
+                        Không có series nào
+                    </div>
+                `;
                 return;
             }
 
-            series.forEach(seriesName => {
+            series.forEach(item => {
+
                 const card = document.createElement("a");
+
                 card.className = "series-card";
-                card.href = seriesName + "/index.html";
-                card.title = "Mở " + seriesName;
+                card.href = item.url;
+                card.target = "_self";
+                card.title = "Mở " + item.name;
+
+                // save local data
                 card.addEventListener("click", () => {
+
                     let data = {};
 
-                    // load
                     const raw = localStorage.getItem("data");
+
                     if (raw) {
-                        data = JSON.parse(raw);
+                        try {
+                            data = JSON.parse(raw);
+                        } catch (e) {
+                            data = {};
+                        }
                     }
 
-                    // nếu chưa có series thì tạo mới
-                    if (!data[seriesName]) {
-                        data[seriesName] = {
+                    if (!data[item.name]) {
+                        data[item.name] = {
                             chapter: 0
                         };
                     }
 
-                    // luôn save lại
-                    localStorage.setItem("data", JSON.stringify(data));
+                    localStorage.setItem(
+                        "data",
+                        JSON.stringify(data)
+                    );
                 });
 
+                // icon
                 const icon = document.createElement("div");
                 icon.className = "series-icon";
                 icon.textContent = "📖";
 
+                // title
                 const name = document.createElement("div");
                 name.className = "series-name";
-                name.textContent = seriesName.replace(/-/g, " ");
+                name.textContent = item.name;
+
+                // url
+                const url = document.createElement("div");
+                url.className = "series-url";
+                url.textContent = item.url;
 
                 card.appendChild(icon);
                 card.appendChild(name);
+                card.appendChild(url);
+
                 container.appendChild(card);
             });
         }
 
-        // Initialize
+        // =========================
+        // INIT
+        // =========================
+
         loadSeries();
     </script>
 
