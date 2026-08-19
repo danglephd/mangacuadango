@@ -61,4 +61,10 @@ const seriesData = [
         url: "https://proj-adventure-boys.web.app/"
     },
  { name: 'eor', url: 'https://proj-eor.web.app/' },
+    { name: 'sakamoto-days', url: 'https://proj-sakamoto-days.web.app/' },
+    { name: 'onepunch-man', url: 'https://proj-onepunch-man.web.app/' },
+    { name: 'yu-gi-oh', url: 'https://pro-yu-gi-oh.web.app/' },
+    { name: 'phong-than-ky', url: 'https://proj-phong-than-ky.web.app/' },
+    { name: 'hunter-x-hunter', url: 'https://proj-hunter-x-hunter.web.app/' },
+    { name: 'dragon-quest-avande', url: 'https://proj-dragon-quest-avande.web.app/' },
 ];
